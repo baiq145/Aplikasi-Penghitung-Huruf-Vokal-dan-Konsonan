@@ -174,5 +174,100 @@ public class VokalUAPDarkFinal extends JFrame {
         saveFile();
         updateLaporan();
     }
+    void ambilUntukUpdate() {
+        int v = table.getSelectedRow();
+        if(v<0) return;
+        selectedRowModel = table.convertRowIndexToModel(v);
+        inputArea.setText(model.getValueAt(selectedRowModel,0).toString());
+        isUpdate = true;
+        cardLayout.show(mainPanel,"input");
+    }
+
+    void hapusData() {
+        int v = table.getSelectedRow();
+        if(v>=0){
+            model.removeRow(table.convertRowIndexToModel(v));
+            saveFile();
+            updateLaporan();
+        }
+    }
+
+    Object[] hitung(String t) {
+        t = t.toLowerCase();
+        int a=0,i=0,u=0,e=0,o=0,k=0;
+        for(char c:t.toCharArray()){
+            if("aiueo".indexOf(c)>=0){
+                if(c=='a')a++;
+                if(c=='i')i++;
+                if(c=='u')u++;
+                if(c=='e')e++;
+                if(c=='o')o++;
+            } else if(Character.isLetter(c)) k++;
+        }
+        int kata = t.trim().isEmpty()?0:t.trim().split("\\s+").length;
+        return new Object[]{t,a,i,u,e,o,a+i+u+e+o,k,kata};
+    }
+
+    void saveFile() {
+        try (PrintWriter pw = new PrintWriter(file)) {
+
+            // HEADER CSV
+            pw.println("Kalimat,A,I,U,E,O,Total Vokal,Konsonan,Jumlah Kata");
+
+            // DATA
+            for (int i = 0; i < model.getRowCount(); i++) {
+                for (int j = 0; j < model.getColumnCount(); j++) {
+                    pw.print(model.getValueAt(i, j));
+                    if (j < model.getColumnCount() - 1) pw.print(",");
+                }
+                pw.println();
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    void loadData() {
+        if(!file.exists()) return;
+        try(Scanner sc=new Scanner(file)){
+            while(sc.hasNextLine())
+                model.addRow(sc.nextLine().split(","));
+        } catch(Exception e){}
+    }
+
+    void updateLaporan() {
+        laporanLabel.setText("Total Data Tersimpan: " + model.getRowCount());
+    }
+
+    //  UTIL
+    JPanel darkPanel(LayoutManager l){
+        JPanel p = new JPanel(l);
+        p.setBackground(bgDark);
+        p.setBorder(BorderFactory.createEmptyBorder(20,20,20,20));
+        return p;
+    }
+
+    JButton navBtn(String t,String pg){
+        JButton b=actionBtn(t);
+        b.addActionListener(e->cardLayout.show(mainPanel,pg));
+        return b;
+    }
+
+    JButton backBtn(){ return navBtn("Kembali","dashboard"); }
+
+    JButton actionBtn(String t){
+        JButton b=new JButton(t);
+        b.setBackground(bgCard);
+        b.setForeground(textLight);
+        b.setFont(new Font("Segoe UI",Font.BOLD,14));
+        b.setFocusPainted(false);
+        return b;
+    }
+
+    public static void main(String[] args){
+        SwingUtilities.invokeLater(VokalUAPDarkFinal::new);
+    }
+}
 
    
